@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,15 +9,22 @@ import 'package:movies_app/bloc/moviebloc/movie_bloc.dart';
 import 'package:movies_app/bloc/moviebloc/movie_bloc_event.dart';
 import 'package:movies_app/bloc/moviebloc/movie_bloc_state.dart';
 import 'package:movies_app/model/movie.dart';
-import 'dart:io';
+import 'package:movies_app/ui/build_widget_category.dart';
+
+import 'build_widget_category.dart';
+import 'movie_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => MovieBloc()..add(MovieEventStarted(0, '')))
+        BlocProvider<MovieBloc>(
+          create: (_) => MovieBloc()..add(MovieEventStarted(0, '')),
+        ),
+        //BlocProvider<PersonBloc>(
+        //create: (_) => PersonBloc()..add(PersonEventStated()),
+        //),
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -26,12 +35,13 @@ class HomeScreen extends StatelessWidget {
             color: Colors.black45,
           ),
           title: Text(
-            'MovieApp'.toUpperCase(),
+            'Лучший помощник',
             style: Theme.of(context).textTheme.caption.copyWith(
-                color: Colors.black45,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Muli'),
+                  color: Colors.deepOrangeAccent,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Muli',
+                ),
           ),
           actions: [
             Container(
@@ -39,7 +49,7 @@ class HomeScreen extends StatelessWidget {
               child: CircleAvatar(
                 backgroundImage: AssetImage('assets/images/logo.jpg'),
               ),
-            )
+            ),
           ],
         ),
         body: _buildBody(context),
@@ -55,7 +65,7 @@ class HomeScreen extends StatelessWidget {
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 BlocBuilder<MovieBloc, MovieState>(
                   builder: (context, state) {
                     if (state is MovieLoading) {
@@ -66,7 +76,6 @@ class HomeScreen extends StatelessWidget {
                       );
                     } else if (state is MovieLoaded) {
                       List<Movie> movies = state.movielist;
-                      print('length:${movies.length}');
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -74,22 +83,23 @@ class HomeScreen extends StatelessWidget {
                             itemCount: movies.length,
                             itemBuilder: (BuildContext context, int index) {
                               Movie movie = movies[index];
-                              print('foto${movie.backdropPath}');
-                              print('foto${movie.title}');
-                              print('foto${movie.overview}');
-                              print('foto${movie.posterPath}');
-
                               return GestureDetector(
                                 onTap: () {
-                                  //Navigator.push(context, MaterialPageRoute(builder: builder))
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          MovieDetailScreen(movie: movie),
+                                    ),
+                                  );
                                 },
                                 child: Stack(
                                   alignment: Alignment.bottomLeft,
-                                  children: [
+                                  children: <Widget>[
                                     ClipRRect(
                                       child: CachedNetworkImage(
                                         imageUrl:
-                                            'https://image.tmdb.org/t/p/original${movie.backdropPath}',
+                                            'https://image.tmdb.org/t/p/original/${movie.backdropPath}',
                                         height:
                                             MediaQuery.of(context).size.height /
                                                 3,
@@ -97,9 +107,15 @@ class HomeScreen extends StatelessWidget {
                                             MediaQuery.of(context).size.width,
                                         fit: BoxFit.cover,
                                         placeholder: (context, url) =>
-                                            Platform.isAndroid
+                                            Container(
+                                          width: 100,
+                                          height: 100,
+                                          child: Center(
+                                            child: Platform.isAndroid
                                                 ? CircularProgressIndicator()
                                                 : CupertinoActivityIndicator(),
+                                          ),
+                                        ),
                                         errorWidget: (context, url, error) =>
                                             Container(
                                           decoration: BoxDecoration(
@@ -124,8 +140,8 @@ class HomeScreen extends StatelessWidget {
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                          fontFamily: 'muli',
+                                          fontSize: 15,
+                                          fontFamily: 'Muli',
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -137,14 +153,26 @@ class HomeScreen extends StatelessWidget {
                             options: CarouselOptions(
                               enableInfiniteScroll: true,
                               autoPlay: true,
-                              autoPlayInterval: Duration(seconds: 5),
+                              autoPlayInterval: Duration(seconds: 10),
                               autoPlayAnimationDuration:
-                                  Duration(milliseconds: 800),
+                                  Duration(milliseconds: 1000),
                               pauseAutoPlayOnTouch: true,
                               viewportFraction: 0.8,
                               enlargeCenterPage: true,
                             ),
-                          )
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  height: 12,
+                                ),
+                                BuildWidgetCategory(),
+                              ],
+                            ),
+                          ),
                         ],
                       );
                     } else {

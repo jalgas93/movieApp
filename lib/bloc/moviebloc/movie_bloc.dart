@@ -26,7 +26,7 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
         movielist = await service.getNowPlayingMovie();
       }
       else {
-        // movielist = await service.getNowPlayingMovie();
+         movielist = await service.getMovieByGenre(movieId);
       }
       yield MovieLoaded(movielist);
     } on Exception
